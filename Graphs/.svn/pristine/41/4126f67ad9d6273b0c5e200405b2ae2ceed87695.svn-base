@@ -1,0 +1,118 @@
+package graph;
+
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+import java.util.Iterator;
+/** Unit tests for the Graph class.
+ *  @author Eric Chang.
+ */
+public class GraphTesting {
+
+    @Test
+    public void emptyGraph() {
+        DirectedGraph g = new DirectedGraph();
+        assertEquals("Initial graph has vertices", 0, g.vertexSize());
+        assertEquals("Initial graph has edges", 0, g.edgeSize());
+    }
+
+    @Test
+    public void testBasics() {
+        DirectedGraph g = new DirectedGraph();
+        assertEquals(0, g.maxVertex());
+        assertEquals(1, g.add());
+        assertEquals(2, g.add());
+        assertEquals(2, g.vertexSize());
+        assertEquals(3, g.add());
+        assertEquals(3, g.maxVertex());
+        assertEquals(0, g.edgeSize());
+        assertTrue(g.contains(3));
+        assertFalse(g.contains(3, 2));
+        g.remove(3);
+        assertEquals(2, g.maxVertex());
+    }
+
+    @Test
+    public void testAddAndRemove() {
+        DirectedGraph g = new DirectedGraph();
+        UndirectedGraph k = new UndirectedGraph();
+        g.add();
+        g.add();
+        g.add();
+        g.remove(2);
+        assertEquals(2, g.add());
+        g.add(1, 3);
+        assertTrue(g.contains(1, 3));
+        assertEquals(1, g.outDegree(1));
+        g.add(1, 3);
+        assertEquals(1, g.outDegree(1));
+        assertTrue(g.contains(1, 3));
+        g.remove(1, 3);
+        assertFalse(g.contains(1, 3));
+        g.remove(5);
+
+        k.add();
+        k.add();
+        k.add();
+        k.add(1, 3);
+        k.add(1, 2);
+        k.add(1, 2);
+        assertTrue(k.contains(1, 2));
+        assertTrue(k.contains(2, 1));
+        k.remove(1, 2);
+        assertFalse(k.contains(1, 2));
+        assertFalse(k.contains(2, 1));
+        k.remove(1, 3);
+    }
+
+    @Test
+    public void testSuccessorsAndPred() {
+        DirectedGraph g = new DirectedGraph();
+        UndirectedGraph k = new UndirectedGraph();
+        g.add();
+        g.add();
+        g.add();
+        g.add(1, 3);
+        g.add(3, 2);
+        g.add(2, 1);
+        g.add(2, 3);
+        assertEquals(3, g.maxVertex());
+        assertEquals(2, g.successor(3, 0));
+        assertEquals(0, g.successor(3, 1));
+        assertEquals(1, g.inDegree(1));
+        assertEquals(2, g.inDegree(3));
+        assertEquals(1, g.predecessor(3, 0));
+        assertEquals(2, g.predecessor(3, 1));
+        g.remove(2);
+        assertEquals(0, g.predecessor(2, 0));
+        g.remove(1);
+        assertEquals(g.add(), 1);
+
+        k.add();
+        k.add();
+        k.add();
+        k.add(1, 2);
+        k.add(1, 3);
+        assertEquals(2, k.predecessor(1, 0));
+        assertEquals(3, k.predecessor(1, 1));
+        assertEquals(2, k.inDegree(1));
+    }
+
+    @Test
+    public void testVertices() {
+        DirectedGraph g = new DirectedGraph();
+        g.add();
+        g.add();
+        g.add();
+        g.add();
+        g.add(2, 3);
+        g.add(4, 3);
+        g.add(1, 3);
+        g.remove(1);
+        Iterator<Integer> items = g.predecessors(3);
+        assertEquals(true, items.hasNext());
+        assertEquals(2, (int) items.next());
+        assertEquals(4, (int) items.next());
+        assertEquals(false, items.hasNext());
+    }
+}

@@ -1,0 +1,226 @@
+package graph;
+
+import java.util.HashMap;
+import java.util.Collections;
+import java.util.ArrayList;
+
+import java.util.Arrays;
+
+/* See restrictions in Graph.java. */
+
+/** A partial implementation of Graph containing elements common to
+ *  directed and undirected graphs.
+ *
+ *  @author Eric Chang.
+ */
+abstract class GraphObj extends Graph {
+
+    /** A new, empty Graph. */
+    GraphObj() {
+        _succesors = new HashMap<Integer, ArrayList<Integer>>();
+        _predecessors = new HashMap<Integer, ArrayList<Integer>>();
+    }
+
+    @Override
+    public int vertexSize() {
+        return _succesors.size();
+    }
+
+    @Override
+    public int maxVertex() {
+        if (_succesors.isEmpty()) {
+            return 0;
+        } else {
+            return Collections.max(_succesors.keySet());
+        }
+    }
+
+    @Override
+    public int edgeSize() {
+        int total = 0;
+        for (ArrayList<Integer> lst : _succesors.values()) {
+            total += lst.size();
+        }
+        return total;
+    }
+
+    @Override
+    public abstract boolean isDirected();
+
+    @Override
+    public int outDegree(int v) {
+        if (!_succesors.containsKey(v)) {
+            return 0;
+        } else {
+            return _succesors.get(v).size();
+        }
+    }
+
+    @Override
+    public abstract int inDegree(int v);
+
+    @Override
+    public boolean contains(int u) {
+        return _succesors.containsKey(u);
+    }
+
+    @Override
+    public boolean contains(int u, int v) {
+        if (_succesors.containsKey(u) && _succesors.containsKey(v)) {
+            if (_succesors.get(u).contains(v)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int add() {
+        int minKey = 1;
+        for (int key : _succesors.keySet()) {
+            minKey += 1;
+            if (!_succesors.containsKey(minKey)) {
+                break;
+            }
+        }
+        _succesors.put(minKey, new ArrayList<Integer>());
+        _predecessors.put(minKey, new ArrayList<Integer>());
+        return minKey;
+    }
+
+    @Override
+    public int add(int u, int v) {
+        try {
+            if (isDirected() && !_succesors.get(u).contains(v)) {
+                _succesors.get(u).add(v);
+                _predecessors.get(v).add(u);
+            } else if (!isDirected() && !_succesors.get(u).contains(v)
+                && !_succesors.get(v).contains(u)) {
+                _succesors.get(u).add(v);
+                _succesors.get(v).add(u);
+            }
+            return u;
+        } catch (NullPointerException e) {
+            return u;
+        }
+    }
+
+    @Override
+    public void remove(int v) {
+        if (_succesors.containsKey(v)) {
+            for (int[] edge : edges()) {
+                if (edge[1] == v) {
+                    remove(edge[0], edge[1]);
+                }
+                if (edge[0] == v) {
+                    remove(edge[0], edge[1]);
+                }
+            }
+            _succesors.remove(v);
+            _predecessors.remove(v);
+        } else {
+            return;
+        }
+    }
+
+    @Override
+    public void remove(int u, int v) {
+        try {
+            if (isDirected()) {
+                int indexOfSuccessor = _succesors.get(u).indexOf(v);
+                _succesors.get(u).remove(indexOfSuccessor);
+                int indexOfPredecessor = _predecessors.get(v).indexOf(u);
+                _predecessors.get(v).remove(indexOfPredecessor);
+            } else {
+                int indexOfFirst = _succesors.get(u).indexOf(v);
+                int indexOfSecond = _succesors.get(v).indexOf(u);
+                _succesors.get(u).remove(indexOfFirst);
+                _succesors.get(v).remove(indexOfSecond);
+            }
+        } catch (NullPointerException e) {
+            return;
+        }
+    }
+
+    @Override
+    public Iteration<Integer> vertices() {
+        return Iteration.iteration(_succesors.keySet().iterator());
+    }
+
+    @Override
+    public int successor(int v, int k) {
+        if (!_succesors.containsKey(v) || k >= _succesors.get(v).size()) {
+            return 0;
+        } else {
+            return _succesors.get(v).get(k);
+        }
+    }
+
+    @Override
+    public abstract int predecessor(int v, int k);
+
+    @Override
+    public Iteration<Integer> successors(int v) {
+        return Iteration.iteration(_succesors.get(v).iterator());
+    }
+
+    @Override
+    public abstract Iteration<Integer> predecessors(int v);
+
+    @Override
+    public Iteration<int[]> edges() {
+        ArrayList<int[]> lstOfEdges = new ArrayList<int[]>();
+        for (int vertex : vertices()) {
+            if (isDirected()) {
+                for (int successor : successors(vertex)) {
+                    int[] edge = {vertex, successor};
+                    lstOfEdges.add(edge);
+                }
+            } else {
+                for (int successor : successors(vertex)) {
+                    boolean marked = false;
+                    int[] opposite = {successor, vertex};
+                    for (int[] edges : lstOfEdges) {
+                        if (Arrays.equals(edges, opposite)) {
+                            marked = true;
+                        }
+                    }
+                    if (marked) {
+                        continue;
+                    }
+                    int[] edge = {vertex, successor};
+                    lstOfEdges.add(edge);
+                }
+            }
+        }
+        return Iteration.iteration(lstOfEdges.iterator());
+    }
+
+    @Override
+    protected boolean mine(int v) {
+        return contains(v);
+    }
+
+    @Override
+    protected void checkMyVertex(int v) {
+        if (!contains(v)) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    @Override
+    protected int edgeId(int u, int v) {
+        if (contains(u, v)) {
+            return (UNIQUE_ID * u) + v;
+        } else {
+            return 0;
+        }
+    }
+
+    /** Adjacency List for succesors represented using a HashMap. */
+    protected HashMap<Integer, ArrayList<Integer>> _succesors;
+    /** Adjacency List for predecessors represented using a HashMap. */
+    protected HashMap<Integer, ArrayList<Integer>> _predecessors;
+    /** Unique edgeID multipler. */
+    private static final int UNIQUE_ID = 10000;
+}

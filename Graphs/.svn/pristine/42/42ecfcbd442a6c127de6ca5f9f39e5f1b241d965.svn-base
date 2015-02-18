@@ -1,0 +1,190 @@
+package graph;
+
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Collections;
+
+/** Unit tests for the Graph class.
+ *  @author Eric Chang.
+ */
+public class TraversalTesting {
+
+    private class Bfs extends BreadthFirstTraversal {
+
+        protected Bfs(Graph G) {
+            super(G);
+            _traversed = new ArrayList<Integer>();
+        }
+
+        protected ArrayList<Integer> getArray() {
+            return _traversed;
+        }
+
+        protected boolean visit(int v) {
+            _traversed.add(v);
+            return true;
+        }
+
+        private ArrayList<Integer> _traversed;
+    }
+
+    private class Dfs extends DepthFirstTraversal {
+
+        protected Dfs(Graph G) {
+            super(G);
+            _traversed = new ArrayList<Integer>();
+        }
+
+        protected boolean visit(int v) {
+            _traversed.add(v);
+            return true;
+        }
+
+        protected ArrayList<Integer> getArray() {
+            return _traversed;
+        }
+
+        protected ArrayList<Integer> getPostVisitArray() {
+            return _opposite;
+        }
+
+        protected boolean postVisit(int v) {
+            _opposite.add(v);
+            return true;
+        }
+        private ArrayList<Integer> _traversed;
+
+        private ArrayList<Integer> _opposite;
+    }
+
+    @Test
+    public void testBreadthSearch() {
+        DirectedGraph g = new DirectedGraph();
+        g.add();
+        g.add();
+        g.add();
+        g.add();
+        g.add();
+        g.add(5, 4);
+        g.add(5, 3);
+        g.add(4, 1);
+        g.add(3, 2);
+        g.add(1, 5);
+        Bfs breadthFirst = new Bfs(g);
+        List<Integer> a = Arrays.<Integer>asList(5, 4, 3, 1, 2);
+        ArrayList<Integer> a1 = new ArrayList<Integer>(a);
+        List<Integer> b = Arrays.<Integer>asList(5, 3, 4, 1, 2);
+        ArrayList<Integer> b1 = new ArrayList<Integer>(b);
+        List<Integer> c = Arrays.<Integer>asList(5, 4, 3, 2, 1);
+        ArrayList<Integer> c1 = new ArrayList<Integer>(c);
+        List<Integer> d = Arrays.<Integer>asList(5, 3, 4, 2, 1);
+        ArrayList<Integer> d1 = new ArrayList<Integer>(d);
+        breadthFirst.traverse(5);
+        ArrayList<Integer> answer = breadthFirst.getArray();
+        if (answer.equals(a1)) {
+            assertEquals(a1.get(0), 5, 0.01);
+            assertEquals(a1.get(1), 4, 0.01);
+            assertEquals(a1.get(2), 3, 0.01);
+            assertEquals(a1.get(3), 1, 0.01);
+            assertEquals(a1.get(4), 2, 0.01);
+        } else if (answer.equals(b1)) {
+            assertEquals(a1.get(0), 5, 0.01);
+            assertEquals(a1.get(1), 3, 0.01);
+            assertEquals(a1.get(2), 4, 0.01);
+            assertEquals(a1.get(3), 1, 0.01);
+            assertEquals(a1.get(4), 2, 0.01);
+        } else if (answer.equals(c1)) {
+            assertEquals(a1.get(0), 5, 0.01);
+            assertEquals(a1.get(1), 4, 0.01);
+            assertEquals(a1.get(2), 3, 0.01);
+            assertEquals(a1.get(3), 2, 0.01);
+            assertEquals(a1.get(4), 1, 0.01);
+        } else if (answer.equals(d1)) {
+            assertEquals(a1.get(0), 5, 0.01);
+            assertEquals(a1.get(1), 3, 0.01);
+            assertEquals(a1.get(2), 4, 0.01);
+            assertEquals(a1.get(3), 2, 0.01);
+            assertEquals(a1.get(4), 1, 0.01);
+        } else {
+            throw new AssertionError("Error");
+        }
+    }
+
+    @Test
+    public void testDepthSearch() {
+        DirectedGraph g = new DirectedGraph();
+        g.add();
+        g.add();
+        g.add();
+        g.add();
+        g.add();
+        g.add(5, 4);
+        g.add(5, 3);
+        g.add(4, 1);
+        g.add(3, 2);
+        g.add(1, 5);
+        Dfs depthFirst = new Dfs(g);
+        List<Integer> a = Arrays.<Integer>asList(5, 4, 1, 3, 2);
+        ArrayList<Integer> a1 = new ArrayList<Integer>(a);
+        List<Integer> b = Arrays.<Integer>asList(5, 3, 2, 4, 1);
+        ArrayList<Integer> b1 = new ArrayList<Integer>(b);
+        depthFirst.traverse(5);
+        ArrayList<Integer> answer = depthFirst.getArray();
+        if (answer.equals(a1)) {
+            assertEquals(a1.get(0), 5, 0.01);
+            assertEquals(a1.get(1), 4, 0.01);
+            assertEquals(a1.get(2), 1, 0.01);
+            assertEquals(a1.get(3), 3, 0.01);
+            assertEquals(a1.get(4), 2, 0.01);
+        } else if (answer.equals(b1)) {
+            assertEquals(a1.get(0), 5, 0.01);
+            assertEquals(a1.get(1), 3, 0.01);
+            assertEquals(a1.get(2), 2, 0.01);
+            assertEquals(a1.get(3), 4, 0.01);
+            assertEquals(a1.get(4), 1, 0.01);
+        } else {
+            throw new AssertionError("Error");
+        }
+    }
+
+    @Test
+    public void testPostVisitSearch() {
+        DirectedGraph g = new DirectedGraph();
+        g.add();
+        g.add();
+        g.add();
+        g.add();
+        g.add();
+        g.add(5, 4);
+        g.add(5, 3);
+        g.add(4, 1);
+        g.add(3, 2);
+        g.add(1, 5);
+        Dfs postDepth = new Dfs(g);
+        List<Integer> a = Arrays.<Integer>asList(1, 4, 2, 3, 5);
+        ArrayList<Integer> a1 = new ArrayList<Integer>(a);
+        List<Integer> b = Arrays.<Integer>asList(2, 3, 1, 4, 5);
+        ArrayList<Integer> b1 = new ArrayList<Integer>(b);
+        postDepth.traverse(5);
+        ArrayList<Integer> answer = postDepth.getPostVisitArray();
+        if (answer.equals(a1)) {
+            assertEquals(a1.get(0), 1, 0.01);
+            assertEquals(a1.get(1), 4, 0.01);
+            assertEquals(a1.get(2), 2, 0.01);
+            assertEquals(a1.get(3), 3, 0.01);
+            assertEquals(a1.get(4), 5, 0.01);
+        } else if (answer.equals(b1)) {
+            assertEquals(a1.get(0), 2, 0.01);
+            assertEquals(a1.get(1), 3, 0.01);
+            assertEquals(a1.get(2), 1, 0.01);
+            assertEquals(a1.get(3), 4, 0.01);
+            assertEquals(a1.get(4), 5, 0.01);
+        } else {
+            throw new AssertionError("Error");
+        }
+    }
+}
